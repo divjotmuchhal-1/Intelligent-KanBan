@@ -1,42 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
+import supabase from "./supabaseClient";
 import "./App.css";
 
 interface Task {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   status: "todo" | "inprogress" | "done";
 }
 
-const initialTasks: Task[] = [
-  {
-    _id: "1",
-    title: "Create Kanban UI",
-    description: "Set up columns and drag-and-drop",
-    status: "todo",
-  },
-  {
-    _id: "2",
-    title: "Style Board",
-    description: "Add CSS styling",
-    status: "inprogress",
-  },
-  {
-    _id: "3",
-    title: "Integrate Backend",
-    description: "Connect to API",
-    status: "done",
-  },
-];
-
 const columns = ["todo", "inprogress", "done"] as const;
-
 const columnNames: Record<(typeof columns)[number], string> = {
   todo: "To Do",
   inprogress: "In Progress",
@@ -44,34 +23,100 @@ const columnNames: Record<(typeof columns)[number], string> = {
 };
 
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [dialogColumn, setDialogColumn] = useState<Task["status"]>("todo");
   const [taskForm, setTaskForm] = useState({ title: "", description: "" });
 
-  const onDragEnd = (result: DropResult) => {
+  // Load tasks + subscribe to realtime changes
+  useEffect(() => {
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("id,title,description,status")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("[fetch tasks]", error);
+        setLoading(false);
+        return;
+      }
+
+      // Dedupe by id (defensive)
+      const unique = Array.from(
+        new Map((data ?? []).map((t) => [t.id, t as Task])).values()
+      );
+      setTasks(unique);
+      setLoading(false);
+    };
+    load();
+
+    const channel = supabase
+      .channel("tasks-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const inserted = payload.new as Task;
+            setTasks((prev) =>
+              prev.some((t) => t.id === inserted.id) ? prev : [...prev, inserted]
+            );
+          } else if (payload.eventType === "UPDATE") {
+            const updated = payload.new as Task;
+            setTasks((prev) =>
+              prev.map((t) => (t.id === updated.id ? updated : t))
+            );
+          } else if (payload.eventType === "DELETE") {
+            const removed = payload.old as Task;
+            setTasks((prev) => prev.filter((t) => t.id !== removed.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Drag between columns -> persist status
+  const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination || destination.droppableId === source.droppableId) return;
 
-    const updatedTasks = tasks.map((task) =>
-      task._id === draggableId
-        ? { ...task, status: destination.droppableId as Task["status"] }
-        : task
+    const newStatus = destination.droppableId as Task["status"];
+
+    // Optimistic UI
+    setTasks((prev) =>
+      prev.map((t) => (t.id === draggableId ? { ...t, status: newStatus } : t))
     );
 
-    setTasks(updatedTasks);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: newStatus })
+      .eq("id", draggableId);
+
+    if (error) console.error("[update status]", error);
   };
 
-  const handleAddTask = () => {
+  // Add task -> rely on realtime to render it
+  const handleAddTask = async () => {
     if (!taskForm.title.trim()) return;
 
-    const task: Task = {
-      _id: Date.now().toString(),
+    const { error } = await supabase.from("tasks").insert({
       title: taskForm.title,
       description: taskForm.description,
       status: dialogColumn,
-    };
-    setTasks([...tasks, task]);
+    });
+
+    if (error) {
+      console.error("[insert task]", error);
+      alert(`Insert failed: ${error.message}`);
+      return;
+    }
+
     setTaskForm({ title: "", description: "" });
     setShowDialog(false);
   };
@@ -79,48 +124,64 @@ export default function App() {
   return (
     <div className="kanban-container">
       <h1 className="kanban-title">Kanban Board</h1>
+
       <div className="kanban-board">
         <DragDropContext onDragEnd={onDragEnd}>
-          {columns.map((col) => (
-            <Droppable droppableId={col} key={col}>
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="kanban-column"
-                >
-                  <h2 className="kanban-column-title">{columnNames[col]}</h2>
+          {columns.map((col) => {
+            const colTasks = tasks.filter((t) => t.status === col);
 
-                  <button onClick={() => { setDialogColumn(col); setShowDialog(true); }}>
-                    + Add Task
-                  </button>
+            return (
+              <Droppable droppableId={col} key={col}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`kanban-column ${snapshot.isDraggingOver ? "is-over" : ""}`}
+                  >
+                    <div className="kanban-column-header">
+                      <h2 className="kanban-column-title">{columnNames[col]}</h2>
+                      <span className="count-badge">{colTasks.length}</span>
+                    </div>
 
-                  {tasks
-                    .filter((task) => task.status === col)
-                    .map((task, index) => (
-                      <Draggable
-                        draggableId={task._id}
-                        index={index}
-                        key={task._id}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="kanban-task"
-                          >
-                            <h3>{task.title}</h3>
-                            <p>{task.description}</p>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          ))}
+                    <button
+                      onClick={() => {
+                        setDialogColumn(col);
+                        setShowDialog(true);
+                      }}
+                      className="add-task-btn"
+                    >
+                      + Add Task
+                    </button>
+
+                    {loading ? (
+                      <div className="task-skeleton" />
+                    ) : colTasks.length === 0 ? (
+                      <div className="empty-state">No tasks here yet.</div>
+                    ) : (
+                      colTasks.map((task, index) => (
+                        <Draggable draggableId={task.id} index={index} key={task.id}>
+                          {(provided, snap) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`kanban-task ${snap.isDragging ? "is-dragging" : ""}`}
+                            >
+                              <div className="task-title">{task.title}</div>
+                              {task.description && (
+                                <div className="task-desc">{task.description}</div>
+                              )}
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            );
+          })}
         </DragDropContext>
       </div>
 
@@ -137,11 +198,17 @@ export default function App() {
             <textarea
               placeholder="Description"
               value={taskForm.description}
-              onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
+              onChange={(e) =>
+                setTaskForm({ ...taskForm, description: e.target.value })
+              }
             />
             <div className="modal-actions">
-              <button onClick={() => setShowDialog(false)}>Cancel</button>
-              <button onClick={handleAddTask}>Add</button>
+              <button className="btn-secondary" onClick={() => setShowDialog(false)}>
+                Cancel
+              </button>
+              <button className="btn-primary" onClick={handleAddTask}>
+                Add
+              </button>
             </div>
           </div>
         </div>

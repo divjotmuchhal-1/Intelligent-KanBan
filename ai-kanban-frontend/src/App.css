@@ -1,11 +1,32 @@
+:root {
+  --bg: #f5f7fa;
+  --panel: rgba(255, 255, 255, 0.85);
+  --text: #2c3e50;
+  --muted: #555;
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --accent: #6C63FF;
+  --radius: 16px;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f5f7fa;
+  background: radial-gradient(1200px 600px at 50% -20%, #eef2ff 0%, transparent 60%) var(--bg);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  color: var(--text);
 }
 
 .kanban-container {
@@ -15,14 +36,14 @@ body {
   justify-content: center;
   padding: 2rem;
   max-width: 100%;
+  text-align: center;
 }
 
 .kanban-title {
   font-size: 2.5rem;
   margin-bottom: 2.5rem;
   font-weight: 700;
-  color: #2c3e50;
-  text-align: center;
+  color: var(--text);
 }
 
 .kanban-board {
@@ -34,21 +55,20 @@ body {
 }
 
 .kanban-column {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 16px;
+  background: var(--panel);
+  border-radius: var(--radius);
   padding: 1rem;
   width: 280px;
   min-height: 500px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
   backdrop-filter: blur(6px);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
 }
 
-/* Accent top border for each column (customize colors per status if needed) */
 .kanban-column::before {
   content: '';
   position: absolute;
@@ -56,17 +76,38 @@ body {
   left: 0;
   width: 100%;
   height: 6px;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  background: #6C63FF;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.kanban-column.is-over {
+  outline: 2px dashed rgba(0, 123, 255, 0.4);
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.kanban-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .kanban-column-title {
   font-weight: 600;
   font-size: 1.25rem;
   margin: 1rem 0;
-  color: #2c3e50;
-  text-align: center;
+}
+
+.count-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #e0e7ff;
 }
 
 .kanban-task {
@@ -78,11 +119,18 @@ body {
   width: 100%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #eef2f7;
 }
 
 .kanban-task:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-task.is-dragging {
+  transform: rotate(.5deg) scale(1.02);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.14);
+  border-color: #c7d2fe;
 }
 
 .kanban-task h3 {
@@ -95,7 +143,30 @@ body {
 .kanban-task p {
   font-size: 0.875rem;
   margin: 0;
-  color: #555;
+  color: var(--muted);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.task-skeleton {
+  height: 72px;
+  border-radius: 14px;
+  margin: 10px 0;
+  background: linear-gradient(90deg, #f2f4f8 25%, #e9edf7 37%, #f2f4f8 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0 }
+  100% { background-position: 0 0 }
 }
 
 button {
@@ -103,14 +174,20 @@ button {
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   border: none;
-  background-color: #007bff;
+  background-color: var(--primary);
   color: white;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-dark);
+}
+
+.add-task-btn {
+  margin: 10px auto 12px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 6px 18px rgba(59,130,246,.25);
 }
 
 .modal-backdrop {
@@ -148,7 +225,7 @@ button:hover {
 
 .modal input:focus,
 .modal textarea:focus {
-  border-color: #007bff;
+  border-color: var(--primary);
   outline: none;
 }
 
@@ -164,6 +241,6 @@ button:hover {
 }
 
 .modal-actions button:last-child {
-  background: #007bff;
+  background: var(--primary);
   color: white;
 }
