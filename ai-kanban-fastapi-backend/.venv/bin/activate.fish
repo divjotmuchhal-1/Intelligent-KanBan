@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/divjotmuchhal/JIRA Project/ai-kanban-fastapi-backend/.venv"
+set -gx VIRTUAL_ENV "/Users/divjotmuchhal/Intelligent-KanBan-2/ai-kanban-fastapi-backend/.venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
