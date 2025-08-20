@@ -7,8 +7,16 @@ import EditTaskModal from "./components/EditTaskModal";
 import { COLUMNS, COLUMN_NAMES, type Status, type Task } from "./types/task";
 import "./App.css";
 
-export default function BoardApp({ onLogout }: { onLogout: () => void }) {
-  const { tasks, loading, addTask, updateStatus, updateTask, deleteTask } = useTasks();
+export default function BoardApp({
+  userId,
+  onLogout,
+}: {
+  userId: string;
+  onLogout: () => void;
+}) {
+  // 🔒 All task operations are now scoped to this userId
+  const { tasks, loading, addTask, updateStatus, updateTask, deleteTask } = useTasks(userId);
+
   const [showAdd, setShowAdd] = useState(false);
   const [addColumn, setAddColumn] = useState<Status>("todo");
   const [editing, setEditing] = useState<Task | null>(null);
@@ -21,18 +29,9 @@ export default function BoardApp({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="kanban-container">
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "1rem",
-        }}
-      >
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
         <h1 className="kanban-title">Kanban Board</h1>
-        <button className="btn-secondary" onClick={onLogout}>
-          Logout
-        </button>
+        <button className="btn-secondary" onClick={onLogout}>Logout</button>
       </header>
 
       <div className="kanban-board">
@@ -44,15 +43,10 @@ export default function BoardApp({ onLogout }: { onLogout: () => void }) {
               title={COLUMN_NAMES[col]}
               tasks={tasks.filter((t) => t.status === col)}
               loading={loading}
-              onAddClick={(c) => {
-                setAddColumn(c);
-                setShowAdd(true);
-              }}
+              onAddClick={(c) => { setAddColumn(c); setShowAdd(true); }}
               onEdit={(t) => setEditing(t)}
               onDelete={async (id) => {
-                if (confirm("Delete this task?")) {
-                  await deleteTask(id);
-                }
+                if (confirm("Delete this task?")) await deleteTask(id);
               }}
             />
           ))}
