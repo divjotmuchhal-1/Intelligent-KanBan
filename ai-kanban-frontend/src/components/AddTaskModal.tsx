@@ -99,7 +99,7 @@ export default function AddTaskModal({
       }
 
       tagInputRef.current?.focus();
-    } catch (e) {
+    } catch  {
       setError("Couldn’t fetch tag suggestions. Please try again.");
     } finally {
       setLoadingSuggest(false);
@@ -113,7 +113,7 @@ export default function AddTaskModal({
     try {
       const { improved } = await aiDescribe(title, description);
       if (improved) setDescription(improved);
-    } catch (e) {
+    } catch  {
       setError("Couldn’t improve the description. Please try again.");
     } finally {
       setLoadingImprove(false);
@@ -145,7 +145,7 @@ export default function AddTaskModal({
     try {
       await onAdd(t, description, defaultStatus, { tags: finalTags });
       onCancel();
-    } catch (e) {
+    } catch {
       setError("Failed to create the task. Check console for details.");
     } finally {
       setCreating(false);
