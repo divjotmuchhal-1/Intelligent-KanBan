@@ -16,7 +16,6 @@ export interface Task {
   story_points?: number | null;
   tags?: string[] | null;
 
-  // ✅ ownership + audit (needed for per-user boards and realtime filters)
   created_by: string;              // uuid of owner (NOT NULL in SQL)
   assigned_to?: string | null;     // optional
   created_at: string;              // ISO timestamp
