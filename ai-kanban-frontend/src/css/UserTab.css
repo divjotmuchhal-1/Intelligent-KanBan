@@ -1,0 +1,161 @@
+/* UserTab.css — styles scoped to the Users view */
+/* Assumes CSS vars from :root are present (from AdminLite.css) */
+html { height: 100%; }
+body {
+  min-height: 100%;
+  /* Reserve space for the vertical scrollbar even when it's not needed */
+  scrollbar-gutter: stable both-edges;   /* modern browsers */
+  /* Fallback for older browsers: always show a (disabled) scrollbar */
+  overflow-y: scroll;
+}
+
+/* Ensure the main column always fills the screen height */
+.main-col { min-height: 100vh; }
+
+/* Make the scrolling happen inside content and keep height constant
+   (56px topbar + 44px subbar = 100px) */
+.content {
+  min-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+/* (Optional, but helps) Avoid any implicit min-content sizing that can trigger shifts */
+.grid-2 {
+  width: 100%;
+  min-width: 0;
+}
+
+.card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    width: 100%;         /* ensure full width inside grid */
+    max-width: none;     /* remove any implicit constraints */
+  }
+  
+  .card.full-span {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: none;
+  }
+    
+  .card-title { font-size: 1.1rem; margin-bottom: 4px; }
+  .card-subtitle { color: var(--muted); font-size: .9rem; margin: 0 0 16px 0; }
+  
+  /* Search row + form controls */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px 16px;
+  }
+  @media (min-width: 640px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .full-span { grid-column: 1 / -1; }
+  
+  .label {
+    display: block; font-size: .9rem; font-weight: 600;
+    color: #374151; margin-bottom: 6px;
+  }
+  .input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: .95rem;
+    outline-color: var(--blue-600);
+    background: #fff;
+  }
+  
+  /* Buttons (Refresh) */
+  .btn {
+    appearance: none; border: 1px solid var(--border); cursor: pointer;
+    border-radius: 8px; padding: 10px 14px; font-weight: 700; font-size: .875rem;
+    background: #fff; color: var(--text);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .btn:hover { background: #f3f4f6; }
+  .btn-outline { background: #fff; color: var(--text); border-color: var(--border); }
+  
+  /* Users table — make wider & scrollable */
+  .table-container { 
+    overflow-x: auto; 
+    margin-top: 12px;
+  }
+  .user-tab .table { 
+    width: 100%; 
+    min-width: 1200px;   /* force table to be wider for readability */
+    border-collapse: collapse; 
+    font-size: .9rem; 
+  }
+  .table thead { background: #f9fafb; color: #374151; }
+  .table th, .table td { 
+    text-align: left; 
+    padding: 10px 12px; 
+    border-top: 1px solid var(--border); 
+  }
+  .table thead th { border-top: none; }
+  .table tbody tr:hover { background: #fafafa; }
+  
+  .cell-strong { font-weight: 600; color: #111827; }
+  .text-right { text-align: right; }
+  .empty-state { 
+    text-align: center; 
+    color: var(--muted); 
+    padding: 28px 0; 
+    font-style: italic; 
+  }
+  html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  /* Always reserve space for a vertical scrollbar */
+  overflow-y: scroll;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Grid: prevent column-width recalculation when inner scrollbars appear */
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr); /* <- important */
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Main column should fill the viewport height and not cause layout shifts */
+.main-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;       /* allow child to shrink without forcing a reflow */
+  min-height: 100vh;  /* fill screen */
+}
+
+/* Top bars are fixed-height; content scrolls inside itself */
+.content {
+  flex: 1 1 auto;
+  min-height: 0;                /* allow flex child to actually shrink */
+  padding: 24px;
+  overflow-y: auto;             /* inner scrolling happens here */
+  scrollbar-gutter: stable both-edges; /* reserve gutter even when short */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Two-column area shouldn’t change total width when a scrollbar appears */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+  min-width: 0; /* prevents min-content sizing nudge */
+}
+@media (min-width: 992px) {
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+}
+
+/* Tables: scroll inside the container instead of growing the page */
+.table-container {
+  overflow: auto;               /* not just overflow-x */
+  scrollbar-gutter: stable;     /* keep header cells from nudging */
+}
