@@ -1,0 +1,40 @@
+.sprints-screen { padding: 16px; }
+
+.sprints-header { margin-bottom: 12px; }
+.sprints-header h2 { margin: 0 0 4px 0; }
+.hint { color: #6b7280; font-size: 0.9rem; }
+
+.sp-banner { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
+.sp-banner.neutral { background: #eef2ff; color: #1f2937; }
+.sp-banner.error { background: #fee2e2; color: #991b1b; }
+
+.sp-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.sp-input, .sp-select {
+  border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 10px;
+  outline: none; flex: 1 1 auto; min-width: 220px;
+}
+.sp-select { flex: 0 0 160px; }
+
+.sp-table-wrap { overflow: auto; }
+.sp-table { width: 100%; border-collapse: collapse; }
+.sp-table th, .sp-table td {
+  border-bottom: 1px solid #e5e7eb; padding: 10px; text-align: left;
+}
+.sp-table thead th { background: #f9fafb; font-weight: 600; }
+.sp-strong { font-weight: 600; }
+.sp-muted { color: #9ca3af; }
+
+.sp-badge {
+  display: inline-block; padding: 4px 8px; border-radius: 9999px;
+  font-size: 12px; font-weight: 600;
+}
+.sp-badge.active { background: #dcfce7; color: #166534; }
+.sp-badge.upcoming { background: #eff6ff; color: #1d4ed8; }
+.sp-badge.completed { background: #f3f4f6; color: #374151; }
+
+.sp-empty { text-align: center; color: #6b7280; padding: 16px; }
+
+.sp-goals summary.sp-goals-summary {
+  cursor: pointer; color: #2563eb; user-select: none;
+}
+.sp-goals-body { margin-top: 8px; white-space: pre-wrap; }

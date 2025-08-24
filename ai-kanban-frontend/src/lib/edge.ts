@@ -205,7 +205,6 @@ export async function deleteTaskForUser(userId: string, id: string): Promise<boo
   return Boolean(Array.isArray(data) ? data[0] : data);
 }
 
-/* ----------------------------- Deprecated (remove uses) ----------------------------- */
 /** @deprecated Use createTaskForUser(userId, input) */
 export async function createTask(_input: Partial<Task>): Promise<Task> {
   throw new Error("createTask() is deprecated. Use createTaskForUser(userId, input) via RPC.");

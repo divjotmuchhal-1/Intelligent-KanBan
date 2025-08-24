@@ -16,7 +16,7 @@ type ProfileRow = {
 
 export default function UserTab({
   title = "User Management",
-  subtitle = 'Listing users from public.profiles.',
+  subtitle = 'Listing users from public.users.',
   initialQuery = "",
 }: {
   title?: string;
@@ -34,7 +34,7 @@ export default function UserTab({
     try {
       // Use * in case columns change (email dropped, etc.)
       const { data, error } = await supabase
-        .from("profiles")
+        .from("users")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -52,7 +52,7 @@ export default function UserTab({
       setUsersLoading(true);
       try {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("users")
           .select("*")
           .order("created_at", { ascending: false });
         if (error) throw error;

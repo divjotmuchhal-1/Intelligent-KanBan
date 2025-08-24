@@ -419,26 +419,6 @@ export default function ProfileTab({ userId }: { userId: string }) {
           </div>
         </div>
 
-        {/* READ-ONLY METRICS */}
-        <div className="pt-metrics">
-          <div className="pt-metric">
-            <span>Completed tasks</span>
-            <strong>{completedCount ?? "—"}</strong>
-          </div>
-          <div className="pt-metric">
-            <span>Avg completion</span>
-            <strong>{avgCompletion ?? "—"}</strong>
-          </div>
-          <div className="pt-metric">
-            <span>Feedback score</span>
-            <strong>{feedbackScore ?? "—"}</strong>
-          </div>
-          <div className="pt-metric">
-            <span>Role</span>
-            <strong>{role}</strong>
-          </div>
-        </div>
-
         {/* ACTIONS */}
         <div className="tright">
           <button
